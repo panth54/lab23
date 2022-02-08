@@ -53,8 +53,44 @@ Unit::Unit(string t,string n){
 		def = rand()%3+5;
 	}
 	hp = hpmax;	
+	dodge_on = false;
 	guard_on = false;
 	equipment = NULL;
+}
+
+Equipment::Equipment(int HP,int ATK,int DEF){
+    hpmax = HP; 
+    atk = ATK; 
+    def = DEF; 
+}
+
+vector<int> Equipment::getStat(){
+	vector<int> stats;
+	    stats.push_back(hpmax);
+		stats.push_back(atk);
+		stats.push_back(def);
+
+	return stats;
+}
+
+void Unit::equip(Equipment *newEquip){
+	vector<int> stats;
+    
+	if(equipment != NULL){
+		stats = (*equipment).getStat();
+		hpmax -= stats[0];
+		atk -= stats[1];
+		def -= stats[2];
+	}
+
+    equipment = newEquip;
+    stats = (*newEquip).getStat();
+    
+	if (hp>hpmax) hp = hpmax;
+	else hpmax += stats[0];
+
+	atk += stats[1];
+	def += stats[2];
 }
 
 void Unit::showStatus(){
@@ -73,6 +109,7 @@ void Unit::showStatus(){
 }
 
 void Unit::newTurn(){
+	dodge_on = false;
 	guard_on = false; 
 }
 
@@ -81,6 +118,11 @@ int Unit::beAttacked(int oppatk){
 	if(oppatk > def){
 		dmg = oppatk-def;	
 		if(guard_on) dmg = dmg/3;
+		if (dodge_on == true){
+		    int dodge_chance = rand()%2;
+		    if (dodge_chance == 1) dmg = 0;
+		    else dmg *= 2;
+		}
 	}	
 	hp -= dmg;
 	if(hp <= 0){hp = 0;}
@@ -92,11 +134,20 @@ int Unit::attack(Unit &opp){
 	return opp.beAttacked(atk);
 }
 
+
+int Unit::ultimateAttack(Unit &opp){
+	return opp.beAttacked(atk * 2);
+}
+
 int Unit::heal(){
 	int h = rand()%21 + 10;
 	if(hp + h > hpmax) h = hpmax - hp;
 	hp = hp + h;
 	return h;
+}
+
+void Unit::dodge(){
+	dodge_on = true;
 }
 
 void Unit::guard(){
@@ -167,4 +218,3 @@ void playerLose(){
 	cout << "*                                                     *\n";
 	cout << "*******************************************************\n";
 };
-
